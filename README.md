@@ -170,10 +170,15 @@ http://127.0.0.1:8050/
 ## 👨‍💻 Authors
 
 **Mostafa Gamal Fouda**
+
 **Mariam Gaber**
+
 **Abdelhamid Ebrahim** 
+
 **Tasneem Radwan**
+
 **Mostafa Fathallah**
+
 **Samuel Adel**
 
 Machine Learning Engineer | DEPI Trainee
