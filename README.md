@@ -181,6 +181,6 @@ http://127.0.0.1:8050/
 
 **Samuel Adel**
 
-Machine Learning Engineer | DEPI Trainee
+Machine Learning Engineer | DEPI trainees
 
 ---
