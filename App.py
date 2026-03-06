@@ -16,6 +16,7 @@ def calc_kpis(filtered_df):
 
 # Initialize app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.title = "Interactive Dashboard"
 
 # Sidebar
 sidebar = html.Div([
