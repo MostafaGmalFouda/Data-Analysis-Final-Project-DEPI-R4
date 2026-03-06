@@ -1,0 +1,111 @@
+/* assets/style.css */
+
+/* Body */
+body {
+    background: linear-gradient(135deg, #1f2a44, #0b0f1a);
+    font-family: 'Segoe UI', sans-serif;
+    color: #f8fafc;
+    margin: 0;
+    padding: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    padding: 2rem 1.5rem;
+    background-color: #1e293b;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+    z-index: 100;
+}
+
+.sidebar-title {
+    color: #818cf8;
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 1.5px;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.dropdown-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.filter-group {
+    background: linear-gradient(135deg, #334155, #1e293b);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    color: #818cf8;
+}
+
+.custom-checklist label {
+    margin-bottom: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #848ff1;
+
+}
+
+/* Main Content */
+.content-area {
+    margin-left: 280px;
+    padding: 2rem;
+}
+
+.main-title {
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #f1f5f9;
+}
+
+/* KPI Boxes */
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-box {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.kpi-box:hover {
+    transform: translateY(-5px);
+}
+
+.kpi-label {
+    font-size: 0.9rem;
+    color: #e0e7ff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+/* Graph Card */
+.graph-card {
+    background: linear-gradient(135deg, #111827, #1f2937);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #334155;
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}

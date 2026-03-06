@@ -5,95 +5,88 @@ import plotly.express as px
 import pandas as pd
 
 # Load data
-df = pd.read_csv(r"D:\Gemy Study\DEPI\Machine learning DEPI round_4\TEC\Amit-1\src\ML\data-analysis\Final_Project\clean_data.csv")
-
-# ثابت: Total Trips
+df = pd.read_csv('clean_data.csv')
 TOTAL_TRIPS = len(df)
 
-# KPIs function
 def calc_kpis(filtered_df):
-    avg_duration = filtered_df['duration_min'].mean()
-    active_users = len(filtered_df)  # عدد الصفوف بعد الفلترة
-    if not filtered_df.empty:
-        most_popular_station = filtered_df['start_station_name'].value_counts().idxmax()
-    else:
-        most_popular_station = "N/A"
+    avg_duration = filtered_df['duration_min'].mean() if not filtered_df.empty else 0
+    active_users = len(filtered_df)
+    most_popular_station = filtered_df['start_station_name'].value_counts().idxmax() if not filtered_df.empty else "N/A"
     return avg_duration, active_users, most_popular_station
 
 # Initialize app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# Sidebar filters (كل فلتر في Card منفصل)
+# Sidebar
 sidebar = html.Div([
-    dbc.Card([
-        dbc.CardHeader("User Type"),
-        dbc.CardBody([
-            dcc.Checklist(
-                id='user_type_filter',
-                options=[{'label': i, 'value': i} for i in df['user_type'].unique()],
-                value=df['user_type'].unique().tolist(),
-                inputStyle={"margin-right":"10px"},
-                style={"marginBottom":"10px"}
-            )
-        ])
-    ], className="mb-3"),
+    html.H2("DASHBOARD", className="sidebar-title"),
+    html.Hr(style={"color": "#475569"}),
+    html.P("FILTERS", className="filter-label"),
 
-    dbc.Card([
-        dbc.CardHeader("Gender"),
-        dbc.CardBody([
-            dcc.Checklist(
-                id='gender_filter',
-                options=[{'label': i, 'value': i} for i in df['member_gender'].unique()],
-                value=df['member_gender'].unique().tolist(),
-                inputStyle={"margin-right":"10px"},
-                style={"marginBottom":"10px"}
-            )
-        ])
-    ], className="mb-3"),
+    html.Div([
+        html.Label("User Type", className="dropdown-label"),
+        dcc.Checklist(
+            id='user_type_filter',
+            options=[{'label': i, 'value': i} for i in df['user_type'].unique()],
+            value=df['user_type'].unique().tolist(),
+            className="custom-checklist"
+        ),
+    ], className="filter-group"),
 
-    dbc.Card([
-        dbc.CardHeader("Age Group"),
-        dbc.CardBody([
-            dcc.Checklist(
-                id='age_group_filter',
-                options=[{'label': i, 'value': i} for i in df['age_group'].unique()],
-                value=df['age_group'].unique().tolist(),
-                inputStyle={"margin-right":"10px"},
-                style={"marginBottom":"10px"}
-            )
-        ])
-    ], className="mb-3"),
-], style={"width":"20%", "float":"left", "padding":"20px", "height":"100vh", "backgroundColor":"#f8f9fa"})
+    html.Div([
+        html.Label("Gender", className="dropdown-label"),
+        dcc.Checklist(
+            id='gender_filter',
+            options=[{'label': i, 'value': i} for i in df['member_gender'].unique()],
+            value=df['member_gender'].unique().tolist(),
+            className="custom-checklist"
+        ),
+    ], className="filter-group"),
+
+    html.Div([
+        html.Label("Age Group", className="dropdown-label"),
+        dcc.Checklist(
+            id='age_group_filter',
+            options=[{'label': i, 'value': i} for i in df['age_group'].unique()],
+            value=df['age_group'].unique().tolist(),
+            className="custom-checklist"
+        ),
+    ], className="filter-group"),
+
+], className="sidebar")
 
 # Main content
-content = dbc.Container([
-    html.H1("Bike Sharing Dashboard", style={'textAlign':'center'}),
+content = html.Div([
+    html.H1("Bike Sharing Overview", className="main-title"),
+    html.Div(id="kpi-cards", className="kpi-container"),
 
-    dbc.Row(id="kpi-cards", className="mb-4"),
-
+    # First Row: Pie + Bar
     dbc.Row([
-        dbc.Col(dcc.Graph(id='user_type_pie'), width=6),
-        dbc.Col(dcc.Graph(id='gender_bar'), width=6),
-    ], className="mb-4"),
+        dbc.Col(html.Div(dcc.Graph(id='user_type_pie'), className="graph-card"), width=5),
+        dbc.Col(html.Div(dcc.Graph(id='gender_bar'), className="graph-card"), width=7),
+    ], className="mb-4 g-3"),
 
+    # Second Row: Wave Chart فقط
     dbc.Row([
-        dbc.Col(dcc.Graph(id='duration_hist'), width=12),
-    ], className="mb-4"),
+        dbc.Col(html.Div(dcc.Graph(id='duration_wave'), className="graph-card"), width=12),
+    ], className="mb-4 g-3"),
 
+    # Third Row: Top Stations Bar
     dbc.Row([
-        dbc.Col(dcc.Graph(id='top_start'), width=6),
-        dbc.Col(dcc.Graph(id='top_end'), width=6),
-    ], className="mb-4"),
-], style={"width":"75%", "float":"right"})
+        dbc.Col(html.Div(dcc.Graph(id='top_start'), className="graph-card"), width=6),
+        dbc.Col(html.Div(dcc.Graph(id='top_end'), className="graph-card"), width=6),
+    ], className="mb-4 g-3"),
+
+], className="content-area")
 
 app.layout = html.Div([sidebar, content])
 
-# Callbacks
+# Callback
 @app.callback(
     [Output('kpi-cards','children'),
      Output('user_type_pie','figure'),
      Output('gender_bar','figure'),
-     Output('duration_hist','figure'),
+     Output('duration_wave','figure'),
      Output('top_start','figure'),
      Output('top_end','figure')],
     [Input('user_type_filter','value'),
@@ -101,41 +94,87 @@ app.layout = html.Div([sidebar, content])
      Input('age_group_filter','value')]
 )
 def update_dashboard(user_types, genders, age_groups):
-    # Filter data
     filtered_df = df[
         df['user_type'].isin(user_types) &
         df['member_gender'].isin(genders) &
         df['age_group'].isin(age_groups)
     ]
 
-    # KPIs
     avg_duration, active_users, most_popular_station = calc_kpis(filtered_df)
-    kpi_cards = dbc.Row([
-        dbc.Col(dbc.Card([html.H4("Total Trips"), html.H2(f"{TOTAL_TRIPS:,}")]), width=3),
-        dbc.Col(dbc.Card([html.H4("Avg Duration (min)"), html.H2(f"{avg_duration:.1f}")]), width=3),
-        dbc.Col(dbc.Card([html.H4("Active Users"), html.H2(f"{active_users:,}")]), width=3),
-        dbc.Col(dbc.Card([html.H4("Most Popular Station"), html.H2(most_popular_station)]), width=3),
-    ])
 
-    # Charts
-    user_type_pie = px.pie(filtered_df, names='user_type', title="Subscriber vs Customer Usage")
+    gradient_colors = ["#24255d","#8b5cf6","#c648ec","#bc81f3","#471E33","#ec4899","#c45cba","#012b4e","#3189d0","#87d6f5"]
 
+    # KPI Cards
+    kpi_cards = [
+        html.Div([html.P("Total Trips", className="kpi-label"), html.H3(f"{TOTAL_TRIPS:,}")], className="kpi-box"),
+        html.Div([html.P("Avg Duration", className="kpi-label"), html.H3(f"{avg_duration:.1f}m")], className="kpi-box"),
+        html.Div([html.P("Active Users", className="kpi-label"), html.H3(f"{active_users:,}")], className="kpi-box"),
+        html.Div([html.P("Top Station", className="kpi-label"), html.H3(most_popular_station, style={"fontSize":"14px"})], className="kpi-box"),
+    ]
+
+    # Pie Chart
+    user_type_pie = px.pie(filtered_df, names='user_type', hole=0.4, color_discrete_sequence=gradient_colors)
+    
+    # Gender Bar
     gender_counts = filtered_df['member_gender'].value_counts().reset_index()
-    gender_counts.columns = ['gender','count']
-    gender_bar = px.bar(gender_counts, x='gender', y='count', title="Gender Distribution", color='gender')
+    gender_bar = px.bar(gender_counts, x='member_gender', y='count', color='member_gender', color_discrete_sequence=gradient_colors)
 
-    duration_hist = px.histogram(filtered_df, x='duration_min', color='member_gender', nbins=50, title="Trip Duration Distribution")
+  # Wave Chart (Duration)
+    # Wave Chart (Duration)
+    duration_wave = px.line(
+        filtered_df.sort_values('duration_min').reset_index(),
+        x=range(len(filtered_df)),
+        y='duration_min'
+    )
 
+    duration_wave.update_traces(
+        mode="lines+markers",
+        line=dict(width=4, color="#6366f1"),
+        marker=dict(
+            size=8,                
+            color="#a855f7",       
+            line=dict(width=1, color="#24255d") 
+        ),
+        fill='tozeroy',
+        fillcolor='rgba(99,102,241,0.15)'
+    )
+    duration_wave.update_layout(
+    hovermode="x unified"
+     )    
+    # Top Stations
     start_counts = filtered_df['start_station_name'].value_counts().nlargest(10).reset_index()
-    start_counts.columns = ['station','count']
-    top_start = px.bar(start_counts, x='count', y='station', orientation='h', title="Top 10 Start Stations")
-
+    top_start = px.scatter(
+    start_counts,
+    x='count',
+    y='start_station_name',
+    size='count',
+    color='count',
+    color_continuous_scale=gradient_colors
+     )
+    top_start.update_traces(marker=dict(line=dict(width=1,color="white")))
     end_counts = filtered_df['end_station_name'].value_counts().nlargest(10).reset_index()
-    end_counts.columns = ['station','count']
-    top_end = px.bar(end_counts, x='count', y='station', orientation='h', title="Top 10 End Stations")
+    top_end = px.funnel(
+    end_counts,
+    x='count',
+    y='end_station_name',
+    color='count',
+    color_discrete_sequence=gradient_colors
+     )
+    # Apply dark theme
+    for fig in [user_type_pie, gender_bar, duration_wave, top_start, top_end]:
+        fig.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font_color='#f8fafc',
+            margin=dict(l=20,r=20,t=30,b=20),
+            height=300,
+            showlegend=False if fig != user_type_pie else True
+        )
+        if hasattr(fig.layout, 'xaxis'):
+            fig.update_xaxes(showgrid=False, zeroline=False)
+            fig.update_yaxes(showgrid=False, zeroline=False)
 
-    return kpi_cards, user_type_pie, gender_bar, duration_hist, top_start, top_end
+    return kpi_cards, user_type_pie, gender_bar, duration_wave, top_start, top_end
 
 if __name__ == "__main__":
     app.run(debug=True)
-
